@@ -14,9 +14,173 @@
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; cursor: pointer; }
     button { padding: 8px 12px; border-radius: 4px; border: none; background: #007acc; color: white; cursor: pointer; }
     .legend { font-size: 0.9em; color: #666; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-<!-- Content omitted for brevity, would normally include full script and body as above -->
+
+<h1>Spielerauswahl (max. 6 Spieler)</h1>
+<div class="section" id="playerSetup">
+  <div id="playerSlots"></div>
+  <button onclick="startGame()">Spiel starten</button>
+</div>
+
+<div class="section hidden" id="gameSection">
+  <h2>Kategorien</h2>
+  <div id="categoryButtons"></div>
+  <input type="text" id="newCategoryName" placeholder="Neue Kategorie">
+  <button onclick="addCategory()">Kategorie hinzufügen</button>
+
+  <div id="ranking"></div>
+  <div class="legend">"x" = Sieg. Bei allen Spielen außer "Watten" gibt es 5 € von jedem Gegner. Bei Watten nur Sieg-Zählung.</div>
+
+  <h2 id="categoryTitle"></h2>
+  <table id="scoreTable" class="hidden">
+    <thead id="scoreHead"></thead>
+    <tbody id="scoreBody"></tbody>
+  </table>
+</div>
+
+<script>
+  const maxPlayers = 6;
+  const playerNames = new Set();
+  let currentPlayers = Array(maxPlayers).fill("");
+  let selectedCategory = null;
+  const categories = {};
+  const baseRounds = 9;
+
+  function updatePlayerSlots() {
+    const container = document.getElementById('playerSlots');
+    container.innerHTML = '';
+    for (let i = 0; i < maxPlayers; i++) {
+      let slotDiv = document.createElement('div');
+      let select = document.createElement('select');
+      select.innerHTML = '<option value="">-- Spieler auswählen --</option>';
+      playerNames.forEach(name => {
+        select.innerHTML += `<option value="${name}">${name}</option>`;
+      });
+      select.onchange = () => currentPlayers[i] = select.value;
+
+      let input = document.createElement('input');
+      input.placeholder = 'Neuer Name';
+      input.onchange = () => {
+        playerNames.add(input.value);
+        currentPlayers[i] = input.value;
+        updatePlayerSlots();
+      };
+
+      slotDiv.appendChild(select);
+      slotDiv.appendChild(document.createTextNode(" oder "));
+      slotDiv.appendChild(input);
+      container.appendChild(slotDiv);
+    }
+  }
+
+  function startGame() {
+    if (currentPlayers.filter(n => n).length === 0) {
+      alert('Mindestens ein Spielername muss ausgewählt oder eingegeben werden.');
+      return;
+    }
+    currentPlayers = currentPlayers.filter(n => n).slice(0, maxPlayers);
+    document.getElementById('playerSetup').classList.add('hidden');
+    document.getElementById('gameSection').classList.remove('hidden');
+    initCategories();
+    updateRanking();
+  }
+
+  function initCategories() {
+    ['Watten', 'Arschloch', 'Kniffel', 'Mensch ärgere Dich nicht'].forEach(name => {
+      categories[name] = Array.from({length: baseRounds}, (_, i) => [
+        `Spiel ${i+1}`, ...Array(currentPlayers.length).fill('')
+      ]);
+    });
+    updateCategoryButtons();
+  }
+
+  function updateCategoryButtons() {
+    const container = document.getElementById('categoryButtons');
+    container.innerHTML = '';
+    for (let cat in categories) {
+      const btn = document.createElement('button');
+      btn.textContent = cat;
+      btn.onclick = () => openCategory(cat);
+      container.appendChild(btn);
+    }
+  }
+
+  function openCategory(name) {
+    selectedCategory = name;
+    const data = categories[name];
+    const thead = document.getElementById('scoreHead');
+    const tbody = document.getElementById('scoreBody');
+    const title = document.getElementById('categoryTitle');
+    title.textContent = name;
+    thead.innerHTML = '<tr><th>Spiel Nr.</th>' + currentPlayers.map(p => `<th>${p}</th>`).join('') + '</tr>';
+    tbody.innerHTML = '';
+
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      let tr = document.createElement('tr');
+      row.forEach((cell, j) => {
+        const td = document.createElement('td');
+        td.textContent = cell;
+        if (j > 0) {
+          td.onclick = () => {
+            categories[name][i][j] = cell === 'x' ? '' : 'x';
+            openCategory(name);
+            updateRanking();
+          };
+        }
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    }
+    document.getElementById('scoreTable').classList.remove('hidden');
+  }
+
+  function addCategory() {
+    const name = document.getElementById('newCategoryName').value.trim();
+    if (!name || categories[name]) return;
+    categories[name] = Array.from({length: baseRounds}, (_, i) => [
+      `Spiel ${i+1}`, ...Array(currentPlayers.length).fill('')
+    ]);
+    document.getElementById('newCategoryName').value = '';
+    updateCategoryButtons();
+  }
+
+  function updateRanking() {
+    const wins = {}, euros = {};
+    currentPlayers.forEach(p => { wins[p] = 0; euros[p] = 0; });
+
+    for (let [cat, games] of Object.entries(categories)) {
+      games.forEach(row => {
+        row.slice(1).forEach((cell, i) => {
+          if (cell === 'x') {
+            wins[currentPlayers[i]]++;
+            if (cat !== 'Watten') {
+              euros[currentPlayers[i]] += 5 * (currentPlayers.length - 1);
+              currentPlayers.forEach((p, j) => {
+                if (j !== i && row[j + 1] === '') euros[p] -= 5;
+              });
+            }
+          }
+        });
+      });
+    }
+
+    const result = currentPlayers.map(p => ({ name: p, wins: wins[p], euros: euros[p] }))
+      .sort((a, b) => b.euros - a.euros || b.wins - a.wins);
+
+    let html = '<h2>Rangliste</h2><table><tr><th>Platz</th><th>Name</th><th>Siege</th><th>€ (ohne Watten)</th></tr>';
+    result.forEach((r, i) => {
+      html += `<tr><td>${i+1}</td><td>${r.name}</td><td>${r.wins}</td><td>${r.euros} €</td></tr>`;
+    });
+    html += '</table>';
+    document.getElementById('ranking').innerHTML = html;
+  }
+
+  updatePlayerSlots();
+</script>
+
 </body>
 </html>
