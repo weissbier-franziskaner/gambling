@@ -4,40 +4,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gambling App – Final</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Play:wght@700&display=swap">
+  <title>Gambling App</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
+      authDomain: "gambling-app-24-7.firebaseapp.com",
+      projectId: "gambling-app-24-7",
+      storageBucket: "gambling-app-24-7.firebasestorage.app",
+      messagingSenderId: "929710119993",
+      appId: "1:929710119993:web:b4678cc49c503c332701e8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Beispiel: Kategorien abrufen
+    async function loadCategories() {
+      const snapshot = await getDocs(collection(db, "categories"));
+      snapshot.forEach(doc => console.log(doc.id, "=>", doc.data()));
+    }
+
+    window.addEventListener("load", loadCategories);
+  </script>
   <style>
     body {
-      font-family: 'Play', sans-serif;
-      background: radial-gradient(circle at center, #111 0%, #000 100%);
-      color: #fff;
-      padding: 20px;
+      background: radial-gradient(circle, #111, #000);
+      color: gold;
+      font-family: sans-serif;
+      padding: 2rem;
     }
     h1 {
-      color: gold;
       text-align: center;
-    }
-    .info {
-      background: rgba(255,255,255,0.05);
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 12px;
-      text-align: center;
-      font-size: 1.2em;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+      font-size: 2rem;
     }
   </style>
 </head>
 <body>
-  <h1>Gambling App – Finale Version</h1>
-  <div class="info">
-    🎉 Alles ist fertig! Diese Version enthält:<br/>
-    ✅ Casino-Design<br/>
-    ✅ Passwortgeschützte Adminfunktionen (25794)<br/>
-    ✅ Rangliste sichtbar, aber manuell aktualisierbar<br/>
-    ✅ Spieler zusammenführen<br/>
-    ✅ Export / Import im JSON-Format<br/>
-    ✅ Voll funktionsfähig für GitHub Pages
-  </div>
+  <h1>🎲 Gambling App verbunden mit Firebase</h1>
+  <p>Die Daten werden direkt aus deiner Firestore-Datenbank geladen und dort gespeichert.</p>
+  <p><strong>Projekt:</strong> gambling-app-24-7</p>
 </body>
 </html>
