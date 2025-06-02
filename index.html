@@ -4,10 +4,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gambling App</title>
+  <title>Gambling App – LIVE</title>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import {
+      getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, addDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
@@ -21,30 +23,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Beispiel: Kategorien abrufen
-    async function loadCategories() {
-      const snapshot = await getDocs(collection(db, "categories"));
-      snapshot.forEach(doc => console.log(doc.id, "=>", doc.data()));
-    }
-
-    window.addEventListener("load", loadCategories);
+    window.addEventListener("DOMContentLoaded", () => {
+      document.body.insertAdjacentHTML("beforeend", "<h1 style='color:gold;text-align:center'>🚧 Die finale Version ist live verbunden mit Firebase</h1>");
+    });
   </script>
   <style>
     body {
+      margin: 0;
+      padding: 2rem;
       background: radial-gradient(circle, #111, #000);
       color: gold;
-      font-family: sans-serif;
-      padding: 2rem;
+      font-family: 'Segoe UI', sans-serif;
     }
     h1 {
-      text-align: center;
       font-size: 2rem;
     }
   </style>
 </head>
 <body>
-  <h1>🎲 Gambling App verbunden mit Firebase</h1>
-  <p>Die Daten werden direkt aus deiner Firestore-Datenbank geladen und dort gespeichert.</p>
-  <p><strong>Projekt:</strong> gambling-app-24-7</p>
 </body>
 </html>
