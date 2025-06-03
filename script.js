@@ -1,1 +1,0 @@
-// JavaScript für UI, Firestore & Spiel-Logik
