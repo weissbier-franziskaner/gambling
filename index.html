@@ -2,27 +2,97 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gambling mit den Boys</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { font-size: 2em; }
+        nav a { margin-right: 15px; text-decoration: none; color: blue; }
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+        table { margin-top: 20px; }
+    </style>
 </head>
 <body>
     <h1>Gambling mit den Boys</h1>
     <p>Wer ist der Beste?</p>
 
     <nav>
-        <a href="watten.html">Watten</a> |
-        <a href="mensch.html">Mensch ärgere Dich nicht</a> |
-        <a href="arschloch.html">Arschloch</a> |
-        <a href="kniffel.html">Kniffel</a> |
+        <a href="watten.html">Watten</a>
+        <a href="mensch.html">Mensch ärgere Dich nicht</a>
+        <a href="arschloch.html">Arschloch</a>
+        <a href="kniffel.html">Kniffel</a>
         <a href="admin.html">Admin</a>
     </nav>
 
-    <div id="gesamtSiege">
-        <!-- Dynamische Sieganzeige kommt hier hin -->
-    </div>
+    <h2>Gesamtsiege pro Spieler</h2>
+    <table id="siegeTabelle">
+        <thead>
+            <tr><th>Spieler</th><th>Siege</th></tr>
+        </thead>
+        <tbody id="siegeBody">
+            <!-- Dynamisch befüllt -->
+        </tbody>
+    </table>
 
     <canvas id="siegeChart" width="400" height="200"></canvas>
 
-    <!-- Script- und Style-Integration würde hier folgen -->
+    <script type="module">
+        // Firebase config
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
+            authDomain: "gambling-app-24-7.firebaseapp.com",
+            projectId: "gambling-app-24-7",
+            storageBucket: "gambling-app-24-7.appspot.com",
+            messagingSenderId: "929710119993",
+            appId: "1:929710119993:web:b4678cc49c503c332701e8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function ladeSiege() {
+            const siegeCollection = collection(db, "siege");
+            const snapshot = await getDocs(siegeCollection);
+            const siegeDaten = {};
+
+            snapshot.forEach(doc => {
+                const daten = doc.data();
+                const spieler = daten.spieler;
+                siegeDaten[spieler] = (siegeDaten[spieler] || 0) + 1;
+            });
+
+            const tbody = document.getElementById("siegeBody");
+            tbody.innerHTML = "";
+            const labels = [];
+            const values = [];
+
+            for (const [spieler, siege] of Object.entries(siegeDaten)) {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${spieler}</td><td>${siege}</td>`;
+                tbody.appendChild(row);
+                labels.push(spieler);
+                values.push(siege);
+            }
+
+            const ctx = document.getElementById('siegeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Siege',
+                        data: values
+                    }]
+                }
+            });
+        }
+
+        ladeSiege();
+    </script>
 </body>
 </html>
