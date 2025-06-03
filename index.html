@@ -3,47 +3,23 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Gambling mit den Boys – Startseite</title>
+  <title>Watten – Gambling mit den Boys</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      background: #1a1a1a;
+      background: #111;
       color: #fff;
       font-family: sans-serif;
       margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #c2185b;
-      padding: 1.5rem;
-      text-align: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
-    }
-    header p {
-      margin: 0.5rem 0 0 0;
-      font-size: 1.2rem;
-    }
-    nav {
-      display: flex;
-      justify-content: space-around;
-      background: #880e4f;
       padding: 1rem;
     }
-    nav a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    section {
-      padding: 2rem;
+    h1, h2 {
+      text-align: center;
     }
     table {
       width: 100%;
-      max-width: 600px;
-      margin: auto;
+      max-width: 800px;
+      margin: 1rem auto;
       border-collapse: collapse;
     }
     th, td {
@@ -52,42 +28,55 @@
       text-align: center;
     }
     th {
-      background: #ffeb3b;
-      color: #000;
+      background: #880e4f;
     }
-    canvas {
-      display: block;
+    input[type="number"] {
+      width: 60px;
+    }
+    input[type="text"] {
+      width: 140px;
+    }
+    .gespannt {
+      background-color: orange;
+      color: black;
+    }
+    #wattenChart {
       max-width: 600px;
       margin: 2rem auto;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Gambling mit den Boys</h1>
-    <p>Wer ist der Beste?</p>
-  </header>
+  <h1>Watten</h1>
 
-  <nav>
-    <a href="#">Watten</a>
-    <a href="#">Kniffel</a>
-    <a href="#">Arschloch</a>
-    <a href="#">Mensch</a>
-    <a href="#">Admin</a>
-  </nav>
+  <table>
+    <tr>
+      <th>Team 1 (Name1, Name2)</th>
+      <td><input type="text" id="team1names" placeholder="Name1, Name2"></td>
+      <th>Team 2 (Name3, Name4)</th>
+      <td><input type="text" id="team2names" placeholder="Name3, Name4"></td>
+    </tr>
+  </table>
 
-  <section>
-    <h2 style="text-align:center;">Gesamtsiege Übersicht</h2>
-    <table id="siegTabelle">
-      <tr><th>Spieler</th><th>Anzahl Siege</th></tr>
-    </table>
-    <canvas id="siegChart"></canvas>
-  </section>
+  <table id="spielTabelle">
+    <tr><th>Runde</th><th>Punkte Team 1</th><th>Punkte Team 2</th></tr>
+  </table>
+
+  <div style="text-align:center;">
+    <button onclick="neueRunde()">Neue Runde hinzufügen</button>
+  </div>
+
+  <h2>Siege in Kategorie Watten</h2>
+  <table id="wattenSiege">
+    <tr><th>Spieler</th><th>Anzahl Siege</th></tr>
+  </table>
+
+  <canvas id="wattenChart"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
@@ -101,19 +90,70 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function ladeSiege() {
+    let runde = 1;
+    let team1Summe = 0;
+    let team2Summe = 0;
+
+    function neueRunde() {
+      const table = document.getElementById("spielTabelle");
+      const row = table.insertRow();
+      const cell0 = row.insertCell(0);
+      const cell1 = row.insertCell(1);
+      const cell2 = row.insertCell(2);
+      cell0.innerText = runde;
+      cell1.innerHTML = `<input type="number" min="0" onchange="punkteEingabe(this, 1)">`;
+      cell2.innerHTML = `<input type="number" min="0" onchange="punkteEingabe(this, 2)">`;
+      runde++;
+    }
+
+    window.neueRunde = neueRunde;
+
+    async function punkteEingabe(input, team) {
+      const row = input.parentElement.parentElement;
+      const inputs = row.querySelectorAll("input");
+      inputs.forEach(inp => { if (inp !== input) inp.value = ""; });
+
+      const punkte = parseInt(input.value || 0);
+      if (team === 1) team1Summe += punkte;
+      else team2Summe += punkte;
+
+      const table = document.getElementById("spielTabelle");
+      [...table.rows].forEach((r, i) => {
+        if (i > 0) {
+          const val1 = parseInt(r.cells[1].querySelector("input")?.value || 0);
+          const val2 = parseInt(r.cells[2].querySelector("input")?.value || 0);
+          r.classList.remove("gespannt");
+          if (team1Summe >= 13 && team1Summe < 15 && val1) r.classList.add("gespannt");
+          if (team2Summe >= 13 && team2Summe < 15 && val2) r.classList.add("gespannt");
+        }
+      });
+
+      if (team1Summe >= 15 || team2Summe >= 15) {
+        const names = document.getElementById(team1Summe >= 15 ? "team1names" : "team2names").value.split(",");
+        for (let n of names) {
+          await addDoc(collection(db, "gameResults"), {
+            winner: n.trim(),
+            game: "Watten",
+            timestamp: Date.now()
+          });
+        }
+        alert("Spiel beendet und Sieger gespeichert.");
+        location.reload();
+      }
+    }
+
+    async function ladeWattenSiege() {
       const siegerMap = {};
       const querySnapshot = await getDocs(collection(db, "gameResults"));
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const winner = data.winner;
-        if (winner) {
-          siegerMap[winner] = (siegerMap[winner] || 0) + 1;
+        if (data.game === "Watten" && data.winner) {
+          siegerMap[data.winner] = (siegerMap[data.winner] || 0) + 1;
         }
       });
 
       const siegArray = Object.entries(siegerMap).sort((a, b) => b[1] - a[1]);
-      const table = document.getElementById("siegTabelle");
+      const table = document.getElementById("wattenSiege");
       const labels = [];
       const data = [];
 
@@ -125,32 +165,28 @@
         data.push(siege);
       });
 
-      const ctx = document.getElementById("siegChart").getContext("2d");
+      const ctx = document.getElementById("wattenChart").getContext("2d");
       new Chart(ctx, {
         type: "bar",
         data: {
           labels: labels,
           datasets: [{
-            label: "Anzahl Siege",
+            label: "Watten-Siege",
             data: data,
-            backgroundColor: "rgba(255, 235, 59, 0.8)",
-            borderColor: "rgba(255, 235, 59, 1)",
+            backgroundColor: "rgba(255, 193, 7, 0.8)",
+            borderColor: "rgba(255, 193, 7, 1)",
             borderWidth: 1
           }]
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: { beginAtZero: true }
-          }
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
         }
       });
     }
 
-    ladeSiege();
+    ladeWattenSiege();
   </script>
 </body>
 </html>
