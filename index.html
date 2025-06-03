@@ -2,48 +2,39 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Gambling App Vorschau</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 0; }
-        header { background: #333; color: white; padding: 20px; text-align: center; }
-        .categories { display: flex; justify-content: space-around; flex-wrap: wrap; background: #fff; padding: 20px; }
-        .category { background: #007bff; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-size: 1.2em; margin: 10px; }
-        .matrix { max-width: 900px; margin: 40px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
-        th { background: #f7f7f7; }
-        .title { font-size: 1.5em; margin-bottom: 10px; text-align: center; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Gambling App – Finale Version</title>
+  <script type="module" src="./app.js" defer></script>
 </head>
-<body>
-    <header>
-        <h1>🎲 Gambling App Vorschau</h1>
-        <p>Teste das Layout mit Spielkategorien & Matrix</p>
-    </header>
-    <section class="categories">
-        <a class="category" href="#">Mensch ärgere dich nicht</a>
-        <a class="category" href="#">Kniffel</a>
-        <a class="category" href="#">Watten</a>
-        <a class="category" href="#">Arschloch</a>
-    </section>
-    <section class="matrix">
-        <div class="title">Punkte- & Gewinnübersicht</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Spieler</th>
-                    <th>Gespielte Spiele</th>
-                    <th>Gewonnen</th>
-                    <th>Geld (€)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>Max</td><td>5</td><td>3</td><td>+15</td></tr>
-                <tr><td>Anna</td><td>5</td><td>1</td><td>-10</td></tr>
-                <tr><td>Tom</td><td>5</td><td>1</td><td>-5</td></tr>
-            </tbody>
-        </table>
-    </section>
+<body style="background:#000;color:#fff;font-family:sans-serif;text-align:center;padding:20px;">
+  <h1>🎲 Gambling App</h1>
+  <div>
+    <input id="adminPass" type="password" placeholder="Admin Passwort" />
+    <button onclick="window.loginAdmin()">Login</button>
+    <p id="adminStatus"></p>
+  </div>
+  <div id="adminPanel" style="display:none;">
+    <h2>Ergebnis eintragen</h2>
+    <select id="gameType">
+      <option>Kniffel</option>
+      <option>Watten</option>
+      <option>Arschloch</option>
+    </select>
+    <input id="winners" placeholder="z. B. Max, Anna" />
+    <button onclick="window.submitResult()">Eintragen</button>
+    <p id="status"></p>
+    <h2>Spieler zusammenführen</h2>
+    <select id="fromName"></select>
+    <select id="toName"></select>
+    <button onclick="window.mergePlayers()">Zusammenführen</button>
+    <p id="mergeStatus"></p>
+  </div>
+  <h2>Spielerstatistik</h2>
+  <table border="1" style="margin:auto;margin-top:20px;" id="statsTable">
+    <thead>
+      <tr><th>Spieler</th><th>Spiele</th><th>Siege</th><th>Geld (€)</th><th>Siegquote (%)</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </body>
 </html>
