@@ -13,6 +13,7 @@
     .highlight { background-color: gold; color: black; font-weight: bold; }
     #zurueck { position: absolute; top: 1rem; left: 1rem; background: #444; color: white; padding: 0.5rem 1rem; border-radius: 5px; text-decoration: none; }
   </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <a href="index.html" id="zurueck">← Zurück</a>
@@ -29,6 +30,7 @@
   <thead><tr id="kopfzeile"><th>Runde</th></tr></thead>
   <tbody id="spielBody"></tbody>
 </table>
+<canvas id="siegChart" width="400" height="200" style="margin-top:2rem;"></canvas>
 <button onclick="neueRunde()">+ Neue Runde</button>
 
 <h3>Siege in 'Mensch ärgere Dich nicht'</h3>
@@ -129,6 +131,29 @@
     });
     const siegArray = Object.entries(siegerMap).sort((a, b) => b[1] - a[1]);
     const table = document.getElementById("siegTabelle");
+    
+    const ctx = document.getElementById('siegChart').getContext('2d');
+    const chartData = {
+      labels: siegArray.map(([spieler]) => spieler),
+      datasets: [{
+        label: 'Siege',
+        data: siegArray.map(([, siege]) => siege),
+        borderWidth: 1
+      }]
+    };
+    new Chart(ctx, {
+      type: 'bar',
+      data: chartData,
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
     siegArray.forEach(([spieler, siege]) => {
       const row = document.createElement("tr");
       row.innerHTML = `<td>${spieler}</td><td>${siege}</td>`;
