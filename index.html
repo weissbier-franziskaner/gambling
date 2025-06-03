@@ -30,7 +30,10 @@
     th {
       background: #880e4f;
     }
-    input[type="number"], input[type="text"] {
+    select {
+      width: 100%;
+    }
+    input[type="number"] {
       width: 100%;
       box-sizing: border-box;
     }
@@ -50,11 +53,39 @@
   <table>
     <tr>
       <th>Team 1</th>
-      <td><input type="text" id="team1player1" placeholder="Spieler 1"></td>
-      <td><input type="text" id="team1player2" placeholder="Spieler 2"></td>
+      <td>
+        <select id="team1player1">
+          <option value="">Spieler wählen</option>
+          <option>Max</option>
+          <option>Ben</option>
+          <option>Jonas</option>
+        </select>
+      </td>
+      <td>
+        <select id="team1player2">
+          <option value="">Spieler wählen</option>
+          <option>Max</option>
+          <option>Ben</option>
+          <option>Jonas</option>
+        </select>
+      </td>
       <th>Team 2</th>
-      <td><input type="text" id="team2player1" placeholder="Spieler 3"></td>
-      <td><input type="text" id="team2player2" placeholder="Spieler 4"></td>
+      <td>
+        <select id="team2player1">
+          <option value="">Spieler wählen</option>
+          <option>Leo</option>
+          <option>Tom</option>
+          <option>Luca</option>
+        </select>
+      </td>
+      <td>
+        <select id="team2player2">
+          <option value="">Spieler wählen</option>
+          <option>Leo</option>
+          <option>Tom</option>
+          <option>Luca</option>
+        </select>
+      </td>
     </tr>
   </table>
 
@@ -136,11 +167,13 @@
           : [document.getElementById("team2player1").value, document.getElementById("team2player2").value];
 
         for (let n of names) {
-          await addDoc(collection(db, "gameResults"), {
-            winner: n.trim(),
-            game: "Watten",
-            timestamp: Date.now()
-          });
+          if (n) {
+            await addDoc(collection(db, "gameResults"), {
+              winner: n,
+              game: "Watten",
+              timestamp: Date.now()
+            });
+          }
         }
         alert("Spiel beendet und Sieger gespeichert.");
         location.reload();
@@ -195,7 +228,7 @@
 
     ladeWattenSiege();
 
-    for (let i = 0; i < 4; i++) neueRunde(); // Starte mit 4 Runden
+    for (let i = 0; i < 4; i++) neueRunde();
   </script>
 </body>
 </html>
