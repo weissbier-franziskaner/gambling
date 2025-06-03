@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gambling App – Komplette Version</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { background: #1a1a1a; color: #fff; font-family: sans-serif; margin: 0; padding: 0; }
+    header, nav, section { padding: 1rem; }
+    header { background: #c2185b; text-align: center; }
+    nav { display: flex; flex-wrap: wrap; justify-content: space-around; background: #880e4f; }
+    nav a { color: white; text-decoration: none; padding: 0.5rem; font-weight: bold; }
+    .module { margin-top: 2rem; padding: 1rem; background: #2a2a2a; border-radius: 10px; }
+    input, button, select { margin: 0.5rem 0; padding: 0.5rem; width: 100%; max-width: 400px; }
+    table { width: 100%; color: #fff; margin-top: 1rem; border-collapse: collapse; }
+    td, th { border: 1px solid #777; padding: 5px; text-align: center; }
+    .highlight { background: #ffeb3b; color: #000; }
+  </style>
+</head>
+<body>
+  <header><h1>Gambling App</h1><p>Alle Module integriert</p></header>
+  <nav>
+    <a href="#watten">Watten</a>
+    <a href="#kniffel">Kniffel</a>
+    <a href="#arschloch">Arschloch</a>
+    <a href="#mensch">Mensch</a>
+    <a href="#admin">Admin</a>
+  </nav>
+
+  <section id="watten" class="module">
+    <h2>Watten</h2>
+    <p>Spielverlauf mit Punktezählung und 15:0-Regel</p>
+    <table id="wattenTable">
+      <tr><th>Runde</th><th>Team 1</th><th>Team 2</th></tr>
+    </table>
+    <button onclick="addWattenRow()">Runde hinzufügen</button>
+    <div id="wattenResult"></div>
+  </section>
+
+  <section id="kniffel" class="module">
+    <h2>Kniffel</h2>
+    <p>Kniffelblöcke, Zusatz-Kniffel, Bonus, Punktesumme</p>
+    <div id="kniffelBlocks"></div>
+    <input placeholder="Neuer Spielername" id="newKniffelPlayer">
+    <button onclick="addKniffelPlayer()">Spieler hinzufügen</button>
+  </section>
+
+  <section id="arschloch" class="module">
+    <h2>Arschloch</h2>
+    <p>Gewinner erhält 5 € pro Gegner. Bei Gleichstand: keine Auszahlung.</p>
+  </section>
+
+  <section id="mensch" class="module">
+    <h2>Mensch ärgere dich nicht</h2>
+    <p>Gewinner erhält 5 € pro Gegner. Nur Übersicht für dieses Spiel.</p>
+  </section>
+
+  <section id="admin" class="module">
+    <h2>Adminbereich</h2>
+    <input type="password" placeholder="Admin Passwort" id="adminPw">
+    <button onclick="checkAdmin()">Einloggen</button>
+    <div id="adminPanel" style="display:none;">
+      <p>Spieler zusammenführen & Ergebnisse bestätigen</p>
+    </div>
+  </section>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
+      authDomain: "gambling-app-24-7.firebaseapp.com",
+      projectId: "gambling-app-24-7",
+      storageBucket: "gambling-app-24-7.appspot.com",
+      messagingSenderId: "929710119993",
+      appId: "1:929710119993:web:b4678cc49c503c332701e8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.addWattenRow = function() {
+      const table = document.getElementById("wattenTable");
+      const row = table.insertRow();
+      const runde = table.rows.length - 1;
+      row.insertCell(0).innerText = runde;
+      row.insertCell(1).innerHTML = '<input type="number" onchange="calculateWatten()">';
+      row.insertCell(2).innerHTML = '<input type="number" onchange="calculateWatten()">';
+    };
+
+    window.calculateWatten = function() {
+      const rows = document.querySelectorAll("#wattenTable tr");
+      let sum1 = 0, sum2 = 0;
+      rows.forEach((row, i) => {
+        if (i === 0) return;
+        const p1 = parseInt(row.cells[1].children[0].value) || 0;
+        const p2 = parseInt(row.cells[2].children[0].value) || 0;
+        sum1 += p1; sum2 += p2;
+      });
+      const res = document.getElementById("wattenResult");
+      res.innerText = `Team 1: ${sum1} Punkte | Team 2: ${sum2} Punkte`;
+    };
+
+    window.addKniffelPlayer = function() {
+      const name = document.getElementById("newKniffelPlayer").value.trim();
+      if (!name) return;
+      const div = document.createElement("div");
+      div.innerHTML = `<strong>${name}</strong><table><tr><td>Einser (1)</td><td><input></td></tr><tr><td>Zweier (2)</td><td><input></td></tr><tr><td>Dreier (3)</td><td><input></td></tr><tr><td>Vierer (4)</td><td><input></td></tr><tr><td>Fünfer (5)</td><td><input></td></tr><tr><td>Sechser (6)</td><td><input></td></tr><tr><td>Bonus</td><td><input></td></tr><tr><td>Zusatz-Kniffel</td><td><input></td></tr><tr><td>Summe</td><td><input></td></tr></table>`;
+      document.getElementById("kniffelBlocks").appendChild(div);
+      document.getElementById("newKniffelPlayer").value = "";
+    };
+
+    window.checkAdmin = function() {
+      const pw = document.getElementById("adminPw").value;
+      if (pw === "admin13") {
+        document.getElementById("adminPanel").style.display = "block";
+      } else {
+        alert("Falsches Passwort");
+      }
+    };
+  </script>
+</body>
+</html>
