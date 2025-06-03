@@ -1,1 +1,122 @@
-<!-- Kniffel-Seite mit Punktetabelle, Firebase-Speicherung und Königsliste wird hier eingefügt -->
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Gambling App – Komplett</title>
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f8f8f8; }
+    header { background: #222; color: white; padding: 20px; text-align: center; }
+    nav { display: flex; justify-content: center; background: #444; flex-wrap: wrap; }
+    nav a {
+      color: white; padding: 15px 20px; text-decoration: none;
+      margin: 5px; background: #666; border-radius: 5px;
+    }
+    nav a:hover { background: #888; }
+    section { padding: 20px; max-width: 900px; margin: auto; background: white; margin-top: 20px; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    input[type="number"], input[type="text"] { width: 100%; padding: 5px; }
+    button { padding: 8px 12px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<header><h1>Gambling App</h1></header>
+
+<nav>
+  <a href="#">Mensch ärgere dich nicht</a>
+  <a href="#">Kniffel</a>
+  <a href="#">Watten</a>
+  <a href="#">Arschloch</a>
+  <a href="#" onclick="toggleAdmin()">Admin</a>
+</nav>
+
+<section id="kniffel">
+  <h2>🎲 Kniffel Punkteingabe</h2>
+  <table>
+    <tr><th>Kategorie</th><th>Punkte</th></tr>
+    <tr><td>Einser</td><td><input type="number" id="einser"></td></tr>
+    <tr><td>Zweier</td><td><input type="number" id="zweier"></td></tr>
+    <tr><td>Dreier</td><td><input type="number" id="dreier"></td></tr>
+    <tr><td>Vierer</td><td><input type="number" id="vierer"></td></tr>
+    <tr><td>Fünfer</td><td><input type="number" id="fuenfer"></td></tr>
+    <tr><td>Sechser</td><td><input type="number" id="sechser"></td></tr>
+    <tr><td>Dreierpasch</td><td><input type="number" id="dreierpasch"></td></tr>
+    <tr><td>Viererpasch</td><td><input type="number" id="viererpasch"></td></tr>
+    <tr><td>Full House</td><td><input type="number" id="fullhouse"></td></tr>
+    <tr><td>Kleine Straße</td><td><input type="number" id="kleineStrasse"></td></tr>
+    <tr><td>Große Straße</td><td><input type="number" id="grosseStrasse"></td></tr>
+    <tr><td>Kniffel</td><td><input type="number" id="kniffel"></td></tr>
+    <tr><td>Chance</td><td><input type="number" id="chance"></td></tr>
+  </table>
+  <p>
+    Gewinner: <input type="text" id="spielername" placeholder="Name eingeben" /><br>
+    <button onclick="submitKniffel()">🎯 Gesamtpunktzahl speichern</button>
+    <span id="status"></span>
+  </p>
+</section>
+
+<section>
+  <h2>👑 Kniffel-Könige</h2>
+  <table id="scoreTable">
+    <thead><tr><th>Spieler</th><th>Punktzahl</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
+    authDomain: "gambling-app-24-7.firebaseapp.com",
+    projectId: "gambling-app-24-7",
+    storageBucket: "gambling-app-24-7.appspot.com",
+    messagingSenderId: "929710119993",
+    appId: "1:929710119993:web:b4678cc49c503c332701e8"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const fields = [
+    'einser','zweier','dreier','vierer','fuenfer','sechser',
+    'dreierpasch','viererpasch','fullhouse','kleineStrasse',
+    'grosseStrasse','kniffel','chance'
+  ];
+
+  async function submitKniffel() {
+    const name = document.getElementById("spielername").value.trim();
+    if (!name) return alert("Name fehlt");
+
+    let sum = 0;
+    fields.forEach(id => {
+      const val = parseInt(document.getElementById(id).value) || 0;
+      sum += val;
+    });
+
+    await db.collection("kniffel_siege").add({
+      name: name,
+      punkte: sum,
+      datum: new Date().toISOString()
+    });
+
+    document.getElementById("status").textContent = `✅ ${name} mit ${sum} Punkten gespeichert`;
+    loadKniffel();
+  }
+
+  async function loadKniffel() {
+    const tbody = document.querySelector("#scoreTable tbody");
+    tbody.innerHTML = "";
+    const snapshot = await db.collection("kniffel_siege").orderBy("punkte", "desc").limit(10).get();
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      tbody.innerHTML += `<tr><td>${d.name}</td><td>${d.punkte}</td></tr>`;
+    });
+  }
+
+  loadKniffel();
+</script>
+
+</body>
+</html>
