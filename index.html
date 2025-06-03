@@ -3,22 +3,23 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Gambling App - Spieleübersicht</title>
+    <title>Gambling App Vorschau</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
-        header { background: #222; color: white; padding: 20px; text-align: center; }
-        .categories { display: flex; justify-content: space-around; background: #fff; padding: 20px; }
-        .category { padding: 15px 25px; background: #eee; border-radius: 8px; text-align: center; text-decoration: none; color: black; font-weight: bold; }
-        .matrix { margin: 40px auto; width: 90%; max-width: 800px; background: white; padding: 20px; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-        .title { margin-top: 20px; font-size: 1.4em; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 0; }
+        header { background: #333; color: white; padding: 20px; text-align: center; }
+        .categories { display: flex; justify-content: space-around; flex-wrap: wrap; background: #fff; padding: 20px; }
+        .category { background: #007bff; color: white; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-size: 1.2em; margin: 10px; }
+        .matrix { max-width: 900px; margin: 40px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
+        th { background: #f7f7f7; }
+        .title { font-size: 1.5em; margin-bottom: 10px; text-align: center; }
     </style>
 </head>
 <body>
     <header>
-        <h1>Gambling App</h1>
-        <p>Spielübersicht & Punktestand</p>
+        <h1>🎲 Gambling App Vorschau</h1>
+        <p>Teste das Layout mit Spielkategorien & Matrix</p>
     </header>
     <section class="categories">
         <a class="category" href="#">Mensch ärgere dich nicht</a>
@@ -27,20 +28,20 @@
         <a class="category" href="#">Arschloch</a>
     </section>
     <section class="matrix">
-        <div class="title">Punkte- & Gewinnmatrix</div>
+        <div class="title">Punkte- & Gewinnübersicht</div>
         <table>
             <thead>
                 <tr>
                     <th>Spieler</th>
                     <th>Gespielte Spiele</th>
-                    <th>Gewonnene Spiele</th>
-                    <th>Geld (+/- €)</th>
+                    <th>Gewonnen</th>
+                    <th>Geld (€)</th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td>Spieler 1</td><td>4</td><td>2</td><td>+10</td></tr>
-                <tr><td>Spieler 2</td><td>4</td><td>1</td><td>-5</td></tr>
-                <tr><td>Spieler 3</td><td>4</td><td>1</td><td>-5</td></tr>
+                <tr><td>Max</td><td>5</td><td>3</td><td>+15</td></tr>
+                <tr><td>Anna</td><td>5</td><td>1</td><td>-10</td></tr>
+                <tr><td>Tom</td><td>5</td><td>1</td><td>-5</td></tr>
             </tbody>
         </table>
     </section>
