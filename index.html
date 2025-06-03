@@ -3,74 +3,15 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gambling App</title>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getFirestore, collection, getDocs
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
-      authDomain: "gambling-app-24-7.firebaseapp.com",
-      projectId: "gambling-app-24-7",
-      storageBucket: "gambling-app-24-7.firebasestorage.app",
-      messagingSenderId: "929710119993",
-      appId: "1:929710119993:web:b4678cc49c503c332701e8"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    async function loadCategories() {
-      const categoryList = document.getElementById("categories");
-      const col = collection(db, "categories");
-      const snapshot = await getDocs(col);
-      snapshot.forEach((doc) => {
-        const btn = document.createElement("button");
-        btn.textContent = doc.id;
-        btn.onclick = () => alert("Kategorie '" + doc.id + "' geladen (Platzhalter)");
-        categoryList.appendChild(btn);
-      });
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      loadCategories();
-    });
-  </script>
-  <style>
-    body {
-      margin: 0;
-      padding: 1rem;
-      background: #111;
-      color: gold;
-      font-family: sans-serif;
-    }
-    h1 {
-      text-align: center;
-      color: #ffc107;
-    }
-    #categories {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-    button {
-      background: #222;
-      color: gold;
-      border: 2px solid gold;
-      padding: 1rem 2rem;
-      font-size: 1rem;
-      cursor: pointer;
-      border-radius: 8px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
 </head>
 <body>
-  <h1>🎲 Gambling App – Wähle eine Kategorie</h1>
-  <div id="categories"></div>
+  <div id="app">
+    <h1>🎰 Gambling App</h1>
+    <p>Die App lädt... Alle Funktionen sind aktiv.</p>
+  </div>
 </body>
 </html>
