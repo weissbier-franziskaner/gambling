@@ -3,11 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <title>Mensch ärgere Dich nicht</title>
-  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <a href="index.html">Zurück zur Startseite</a>
   <h1>Mensch ärgere Dich nicht</h1>
   <p>Hier kommt die Seite für Mensch ärgere Dich nicht hin.</p>
+  
+  <canvas id="victoryChart" width="300" height="150"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('victoryChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Spieler 1', 'Spieler 2', 'Spieler 3'],
+        datasets: [{
+          label: 'Siege',
+          data: [5, 3, 7],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+
 </body>
 </html>
