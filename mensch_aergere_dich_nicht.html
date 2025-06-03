@@ -2,168 +2,144 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Mensch ärgere Dich nicht</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #fff; padding: 2rem; }
-    h1 { text-align: center; }
-    a.back-btn {
-      position: absolute; top: 1rem; left: 1rem;
-      background: #444; color: white; padding: 0.5rem 1rem;
-      border-radius: 5px; text-decoration: none;
-    }
-    .spieler-auswahl {
-      display: flex; gap: 1rem; flex-wrap: wrap;
-      justify-content: center; margin: 1rem 0;
-    }
-    select, input[type=number] {
-      padding: 0.3rem;
-      font-size: 1rem;
-      background: #222;
-      color: white;
-      border: 1px solid #888;
-      border-radius: 4px;
-    }
-    button {
-      padding: 0.5rem 1rem; margin-top: 1rem;
-      background: #880e4f; color: white;
-      border: none; border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #ad1457;
-    }
-    table {
-      width: 100%; margin-top: 2rem;
-      border-collapse: collapse;
-    }
-    th, td {
-      border: 1px solid #fff;
-      padding: 0.5rem;
-      text-align: center;
-    }
+    body { font-family: Arial, sans-serif; background: #111; color: white; text-align: center; padding: 2rem; }
+    table { margin: auto; border-collapse: collapse; margin-top: 2rem; }
+    th, td { border: 1px solid white; padding: 0.5rem; min-width: 80px; }
+    input, select, button { margin: 0.2rem; padding: 0.4rem; }
+    .highlight { background-color: gold; color: black; font-weight: bold; }
+    #zurueck { position: absolute; top: 1rem; left: 1rem; background: #444; color: white; padding: 0.5rem 1rem; border-radius: 5px; text-decoration: none; }
   </style>
 </head>
 <body>
-  <a href="index.html" class="back-btn">← Zurück</a>
-  <h1>Mensch ärgere Dich nicht</h1>
+<a href="index.html" id="zurueck">← Zurück</a>
+<h1>Mensch ärgere Dich nicht</h1>
 
-  <div class="spieler-auswahl" id="spielerContainer">
-    <select class="spielerSelect"></select>
-    <select class="spielerSelect"></select>
-  </div>
-  <div style="text-align:center;">
-    <button onclick="spielerHinzufuegen()">+ Spieler hinzufügen</button>
-  </div>
+<div id="spielerBereich">
+  <h3>Spieler hinzufügen</h3>
+  <div id="spielerEingabe"></div>
+  <button onclick="spielerHinzufuegen()">+ Spieler hinzufügen</button>
+</div>
 
-  <table id="punktetabelle">
-    <thead><tr id="kopfzeile"><th>Runde</th></tr></thead>
-    <tbody id="spielrunden">
-      <tr><td>1</td></tr>
-    </tbody>
-  </table>
-  <div style="text-align:center;">
-    <button onclick="neueRunde()">+ Neue Runde hinzufügen</button>
-  </div>
+<h3>Rundentabelle</h3>
+<table id="spielTabelle">
+  <thead><tr id="kopfzeile"><th>Runde</th></tr></thead>
+  <tbody id="spielBody"></tbody>
+</table>
+<button onclick="neueRunde()">+ Neue Runde</button>
 
-  <h2 style="margin-top: 3rem; text-align: center;">Siege in der Kategorie „Mensch ärgere Dich nicht“</h2>
-  <table id="siegTabelle" style="width:50%; margin:auto;">
-    <tr><th>Spieler</th><th>Siege</th></tr>
-  </table>
+<h3>Siege in 'Mensch ärgere Dich nicht'</h3>
+<table id="siegTabelle">
+  <tr><th>Spieler</th><th>Siege</th></tr>
+</table>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, getDocs, addDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
-      authDomain: "gambling-app-24-7.firebaseapp.com",
-      projectId: "gambling-app-24-7",
-      storageBucket: "gambling-app-24-7.appspot.com",
-      messagingSenderId: "929710119993",
-      appId: "1:929710119993:web:b4678cc49c503c332701e8"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
+    authDomain: "gambling-app-24-7.firebaseapp.com",
+    projectId: "gambling-app-24-7",
+    storageBucket: "gambling-app-24-7.appspot.com",
+    messagingSenderId: "929710119993",
+    appId: "1:929710119993:web:b4678cc49c503c332701e8"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    const dropdownHTML = (spieler = "") => {
-      return `<select class="spielerSelect"><option value="${spieler}">${spieler}</option></select>`;
-    };
+  let spielerCount = 2;
+  const maxSpieler = 6;
+  let rundenCounter = 1;
+  const spielerDropdowns = [];
 
-    async function ladeSpielerDropdowns() {
-      const selects = document.querySelectorAll(".spielerSelect");
-      const querySnapshot = await getDocs(collection(db, "gameResults"));
-      const spielerSet = new Set();
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.winner) spielerSet.add(data.winner);
+  function createSpielerDropdown(index) {
+    const select = document.createElement("select");
+    select.innerHTML = `<option disabled selected>Spieler ${index + 1}</option>`;
+    fetchAlleSpieler().then(namen => {
+      namen.forEach(name => {
+        const option = document.createElement("option");
+        option.textContent = name;
+        option.value = name;
+        select.appendChild(option);
       });
-      const spieler = Array.from(spielerSet);
-      selects.forEach(sel => {
-        sel.innerHTML = "";
-        spieler.forEach(name => {
-          const opt = document.createElement("option");
-          opt.value = name;
-          opt.textContent = name;
-          sel.appendChild(opt);
-        });
-      });
-      updateTabelle();
-    }
+    });
+    select.classList.add("spielerSelect");
+    return select;
+  }
 
-    function spielerHinzufuegen() {
-      const container = document.getElementById("spielerContainer");
-      if (container.children.length < 6) {
-        const neu = document.createElement("select");
-        neu.classList.add("spielerSelect");
-        container.appendChild(neu);
-        ladeSpielerDropdowns();
+  function spielerHinzufuegen() {
+    if (spielerDropdowns.length >= maxSpieler) return;
+    const container = document.getElementById("spielerEingabe");
+    const index = spielerDropdowns.length;
+    const dropdown = createSpielerDropdown(index);
+    container.appendChild(dropdown);
+    spielerDropdowns.push(dropdown);
+    updateTabellenKopf();
+  }
+
+  function updateTabellenKopf() {
+    const kopf = document.getElementById("kopfzeile");
+    kopf.innerHTML = "<th>Runde</th>";
+    spielerDropdowns.forEach(drop => {
+      kopf.innerHTML += `<th>${drop.value || drop.options[0].text}</th>`;
+    });
+  }
+
+  function neueRunde() {
+    const body = document.getElementById("spielBody");
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${rundenCounter++}</td>`;
+    spielerDropdowns.forEach(() => {
+      tr.innerHTML += `<td><input type="number" style="width:60px"/></td>`;
+    });
+    body.appendChild(tr);
+  }
+
+  async function fetchAlleSpieler() {
+    const resultSet = new Set();
+    const snapshot = await getDocs(collection(db, "gameResults"));
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.winner) {
+        (Array.isArray(data.winner) ? data.winner : [data.winner]).forEach(name => resultSet.add(name));
       }
-    }
+    });
+    return [...resultSet];
+  }
 
-    function neueRunde() {
-      const rundenBody = document.getElementById("spielrunden");
-      const neueZeile = document.createElement("tr");
-      const rundeNr = rundenBody.children.length + 1;
-      neueZeile.innerHTML = `<td>${rundeNr}</td>`;
-      const spielerAnzahl = document.querySelectorAll(".spielerSelect").length;
-      for (let i = 0; i < spielerAnzahl; i++) {
-        neueZeile.innerHTML += `<td><input type="number" min="0" max="1" /></td>`;
-      }
-      rundenBody.appendChild(neueZeile);
-    }
-
-    function updateTabelle() {
-      const kopfzeile = document.getElementById("kopfzeile");
-      kopfzeile.innerHTML = "<th>Runde</th>";
-      const selects = document.querySelectorAll(".spielerSelect");
-      selects.forEach(sel => {
-        kopfzeile.innerHTML += `<th>${sel.value}</th>`;
-      });
-    }
-
-    async function ladeSiege() {
-      const siegerMap = {};
-      const querySnapshot = await getDocs(collection(db, "gameResults"));
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.winner && data.game === "Mensch") {
+  async function ladeSiege() {
+    const siegerMap = {};
+    const querySnapshot = await getDocs(collection(db, "gameResults"));
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.winner && data.game === "Mensch") {
+        if (Array.isArray(data.winner)) {
+          data.winner.forEach(w => siegerMap[w] = (siegerMap[w] || 0) + 1);
+        } else {
           siegerMap[data.winner] = (siegerMap[data.winner] || 0) + 1;
         }
-      });
-      const siegArray = Object.entries(siegerMap).sort((a, b) => b[1] - a[1]);
-      const table = document.getElementById("siegTabelle");
-      siegArray.forEach(([spieler, siege]) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${spieler}</td><td>${siege}</td>`;
-        table.appendChild(row);
-      });
-    }
+      }
+    });
+    const siegArray = Object.entries(siegerMap).sort((a, b) => b[1] - a[1]);
+    const table = document.getElementById("siegTabelle");
+    siegArray.forEach(([spieler, siege]) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${spieler}</td><td>${siege}</td>`;
+      table.appendChild(row);
+    });
+  }
 
-    ladeSpielerDropdowns();
-    ladeSiege();
-  </script>
+  spielerHinzufuegen();
+  spielerHinzufuegen();
+  neueRunde();
+  ladeSiege();
+</script>
 </body>
 </html>
