@@ -2,40 +2,54 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Gambling mit den Boys</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: white; text-align: center; padding: 2rem; }
-    h1 { font-size: 2rem; }
-    .nav { margin: 2rem 0; }
-    .nav a {
-      display: inline-block; margin: 0.5rem 1rem;
-      padding: 0.75rem 1.5rem; background: #222;
-      color: white; text-decoration: none; border-radius: 5px;
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; margin: 0; padding: 1rem; }
+    h1, h2 { text-align: center; }
+    nav { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
+    a {
+      color: #fff;
+      text-decoration: none;
+      background: #880e4f;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
     }
-    .nav a:hover { background: #444; }
-    table { margin: auto; margin-top: 2rem; border-collapse: collapse; width: 60%; }
-    th, td { border: 1px solid white; padding: 0.5rem; }
-    canvas { margin-top: 2rem; }
+    a:hover { background: #ad1457; }
+    table {
+      width: 80%; margin: auto; border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #fff;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    canvas {
+      display: block;
+      margin: 2rem auto;
+      max-width: 600px;
+    }
   </style>
 </head>
 <body>
   <h1>Gambling mit den Boys</h1>
-  <p>Wer ist der Beste?</p>
-  <div class="nav">
+  <h2>Wer ist der Beste?</h2>
+
+  <nav>
     <a href="watten.html">Watten</a>
-    <a href="mensch_aergere_dich_nicht.html">Mensch ärgere Dich nicht</a>
+    <a href="#">Mensch ärgere Dich nicht</a>
     <a href="#">Arschloch</a>
     <a href="#">Kniffel</a>
     <a href="#">Admin</a>
-  </div>
+  </nav>
 
-  <h2>Gesamtsiege aller Spiele</h2>
-  <table id="siegTabelle">
+  <h2>Gesamtsiege</h2>
+  <table id="gesamtSiege">
     <tr><th>Spieler</th><th>Siege</th></tr>
   </table>
-  <canvas id="siegChart" width="600" height="300"></canvas>
+
+  <canvas id="gesamtChart"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
@@ -54,58 +68,51 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function ladeSiege() {
+    async function ladeGesamtsiege() {
       const siegerMap = {};
       const querySnapshot = await getDocs(collection(db, "gameResults"));
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.winner) {
-          if (Array.isArray(data.winner)) {
-            data.winner.forEach(w => {
-              siegerMap[w] = (siegerMap[w] || 0) + 1;
-            });
-          } else {
-            siegerMap[data.winner] = (siegerMap[data.winner] || 0) + 1;
-          }
+          siegerMap[data.winner] = (siegerMap[data.winner] || 0) + 1;
         }
       });
+
       const siegArray = Object.entries(siegerMap).sort((a, b) => b[1] - a[1]);
-      const table = document.getElementById("siegTabelle");
-      const namen = [];
-      const punkte = [];
+      const table = document.getElementById("gesamtSiege");
+      const labels = [];
+      const data = [];
 
       siegArray.forEach(([spieler, siege]) => {
         const row = document.createElement("tr");
         row.innerHTML = `<td>${spieler}</td><td>${siege}</td>`;
         table.appendChild(row);
-        namen.push(spieler);
-        punkte.push(siege);
+        labels.push(spieler);
+        data.push(siege);
       });
 
-      const ctx = document.getElementById("siegChart").getContext("2d");
+      const ctx = document.getElementById("gesamtChart").getContext("2d");
       new Chart(ctx, {
         type: "bar",
         data: {
-          labels: namen,
+          labels: labels,
           datasets: [{
-            label: "Siege",
-            data: punkte,
+            label: "Gesamtsiege",
+            data: data,
+            backgroundColor: "rgba(33, 150, 243, 0.8)",
+            borderColor: "rgba(33, 150, 243, 1)",
             borderWidth: 1
           }]
         },
         options: {
           responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              stepSize: 1
-            }
-          }
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
         }
       });
     }
 
-    ladeSiege();
+    ladeGesamtsiege();
   </script>
 </body>
 </html>
