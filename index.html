@@ -2,16 +2,16 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
     <title>Gambling mit den Boys</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { font-size: 2em; }
-        nav a { margin-right: 15px; text-decoration: none; color: blue; }
-        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
-        table { margin-top: 20px; }
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        h1 { font-size: 28px; }
+        nav a { margin-right: 15px; }
+        table { width: 60%; margin: 20px 0; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 8px 12px; border: 1px solid #ccc; text-align: center; }
+        #chartContainer { width: 60%; height: 250px; margin-top: 10px; }
+        .dropdown-section { margin: 20px 0; }
     </style>
 </head>
 <body>
@@ -26,22 +26,29 @@
         <a href="admin.html">Admin</a>
     </nav>
 
-    <h2>Gesamtsiege pro Spieler</h2>
-    <table id="siegeTabelle">
-        <thead>
-            <tr><th>Spieler</th><th>Siege</th></tr>
-        </thead>
-        <tbody id="siegeBody">
-            <!-- Dynamisch befüllt -->
-        </tbody>
-    </table>
+    <div class="dropdown-section">
+        <label for="spielerDropdown">Verfügbare Spieler: </label>
+        <select id="spielerDropdown"></select>
+        <input type="text" id="neuerSpielerInput" placeholder="Spieler hinzufügen">
+        <button onclick="spielerHinzufuegen()">Hinzufügen</button>
+    </div>
 
-    <canvas id="siegeChart" width="400" height="200"></canvas>
+    <div id="gesamtSiege">
+        <h2>Gesamtsiege</h2>
+        <table id="siegeTabelle">
+            <thead><tr><th>Spieler</th><th>Siege</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
+    <div id="chartContainer">
+        <canvas id="siegeChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
-        // Firebase config
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDy68MUU2CV9-tCsu9qbKBd7NEL-MGNxX0",
@@ -55,44 +62,62 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function ladeSiege() {
-            const siegeCollection = collection(db, "siege");
-            const snapshot = await getDocs(siegeCollection);
-            const siegeDaten = {};
+        async function ladeSiegeUndSpieler() {
+            const siegeSnap = await getDocs(collection(db, "siege"));
+            const siegeData = {};
+            const spielerSet = new Set();
 
-            snapshot.forEach(doc => {
-                const daten = doc.data();
-                const spieler = daten.spieler;
-                siegeDaten[spieler] = (siegeDaten[spieler] || 0) + 1;
+            siegeSnap.forEach((doc) => {
+                const { spieler, spielart } = doc.data();
+                siegeData[spieler] = (siegeData[spieler] || 0) + 1;
+                spielerSet.add(spieler);
             });
 
-            const tbody = document.getElementById("siegeBody");
-            tbody.innerHTML = "";
-            const labels = [];
-            const values = [];
+            const tabelle = document.querySelector("#siegeTabelle tbody");
+            const dropdown = document.getElementById("spielerDropdown");
+            tabelle.innerHTML = "";
+            dropdown.innerHTML = "";
 
-            for (const [spieler, siege] of Object.entries(siegeDaten)) {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${spieler}</td><td>${siege}</td>`;
-                tbody.appendChild(row);
+            const labels = [], werte = [];
+            Object.entries(siegeData).forEach(([spieler, siege]) => {
+                const row = `<tr><td>${spieler}</td><td>${siege}</td></tr>`;
+                tabelle.innerHTML += row;
                 labels.push(spieler);
-                values.push(siege);
-            }
+                werte.push(siege);
+            });
 
-            const ctx = document.getElementById('siegeChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
+            spielerSet.forEach(name => {
+                dropdown.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+
+            new Chart(document.getElementById("siegeChart"), {
+                type: "bar",
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Siege',
-                        data: values
+                        label: "Anzahl Siege",
+                        data: werte,
+                        borderWidth: 1
                     }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
                 }
             });
         }
 
-        ladeSiege();
+        async function spielerHinzufuegen() {
+            const input = document.getElementById("neuerSpielerInput");
+            const name = input.value.trim();
+            if (!name) return;
+            const dropdown = document.getElementById("spielerDropdown");
+            dropdown.innerHTML += `<option value="${name}">${name}</option>`;
+            input.value = "";
+        }
+
+        ladeSiegeUndSpieler();
     </script>
 </body>
 </html>
