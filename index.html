@@ -30,14 +30,12 @@
     th {
       background: #880e4f;
     }
-    input[type="number"] {
-      width: 60px;
+    input[type="number"], input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
     }
-    input[type="text"] {
-      width: 140px;
-    }
-    .gespannt {
-      background-color: orange;
+    .highlight {
+      background-color: yellow;
       color: black;
     }
     #wattenChart {
@@ -51,10 +49,12 @@
 
   <table>
     <tr>
-      <th>Team 1 (Name1, Name2)</th>
-      <td><input type="text" id="team1names" placeholder="Name1, Name2"></td>
-      <th>Team 2 (Name3, Name4)</th>
-      <td><input type="text" id="team2names" placeholder="Name3, Name4"></td>
+      <th>Team 1</th>
+      <td><input type="text" id="team1player1" placeholder="Spieler 1"></td>
+      <td><input type="text" id="team1player2" placeholder="Spieler 2"></td>
+      <th>Team 2</th>
+      <td><input type="text" id="team2player1" placeholder="Spieler 3"></td>
+      <td><input type="text" id="team2player2" placeholder="Spieler 4"></td>
     </tr>
   </table>
 
@@ -108,6 +108,17 @@
 
     window.neueRunde = neueRunde;
 
+    function updateHighlights() {
+      const team1Head = document.getElementById("team1player1").parentElement.parentElement.cells[0];
+      const team2Head = document.getElementById("team2player1").parentElement.parentElement.cells[3];
+
+      team1Head.classList.remove("highlight");
+      team2Head.classList.remove("highlight");
+
+      if (team1Summe >= 13 && team1Summe < 15) team1Head.classList.add("highlight");
+      if (team2Summe >= 13 && team2Summe < 15) team2Head.classList.add("highlight");
+    }
+
     async function punkteEingabe(input, team) {
       const row = input.parentElement.parentElement;
       const inputs = row.querySelectorAll("input");
@@ -117,19 +128,13 @@
       if (team === 1) team1Summe += punkte;
       else team2Summe += punkte;
 
-      const table = document.getElementById("spielTabelle");
-      [...table.rows].forEach((r, i) => {
-        if (i > 0) {
-          const val1 = parseInt(r.cells[1].querySelector("input")?.value || 0);
-          const val2 = parseInt(r.cells[2].querySelector("input")?.value || 0);
-          r.classList.remove("gespannt");
-          if (team1Summe >= 13 && team1Summe < 15 && val1) r.classList.add("gespannt");
-          if (team2Summe >= 13 && team2Summe < 15 && val2) r.classList.add("gespannt");
-        }
-      });
+      updateHighlights();
 
       if (team1Summe >= 15 || team2Summe >= 15) {
-        const names = document.getElementById(team1Summe >= 15 ? "team1names" : "team2names").value.split(",");
+        const names = team1Summe >= 15
+          ? [document.getElementById("team1player1").value, document.getElementById("team1player2").value]
+          : [document.getElementById("team2player1").value, document.getElementById("team2player2").value];
+
         for (let n of names) {
           await addDoc(collection(db, "gameResults"), {
             winner: n.trim(),
@@ -141,6 +146,8 @@
         location.reload();
       }
     }
+
+    window.punkteEingabe = punkteEingabe;
 
     async function ladeWattenSiege() {
       const siegerMap = {};
@@ -187,6 +194,8 @@
     }
 
     ladeWattenSiege();
+
+    for (let i = 0; i < 4; i++) neueRunde(); // Starte mit 4 Runden
   </script>
 </body>
 </html>
