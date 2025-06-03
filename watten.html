@@ -9,7 +9,7 @@
   <h1>Watten</h1>
   <p>Hier kommt die Seite für Watten hin.</p>
   
-  <canvas id="victoryChart" width="300" height="150"></canvas>
+  <canvas id="victoryChart" width="200" height="100"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const ctx = document.getElementById('victoryChart').getContext('2d');
@@ -24,9 +24,16 @@
         }]
       },
       options: {
+        responsive: false,
+        maintainAspectRatio: false,
         scales: {
           y: {
             beginAtZero: true
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
           }
         }
       }
