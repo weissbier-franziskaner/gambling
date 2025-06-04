@@ -1,1 +1,2 @@
-// Firebase und JS-Logik folgt hier
+// JavaScript Logik hier
+console.log('JS geladen.');
